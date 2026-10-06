@@ -30,7 +30,7 @@ Enriquecimento de E-mail: A API da AnyMail Finder busca e valida o e-mail pelo d
 
 Exportação: Insere os dados finais na planilha Google Sheets categorizados pelo nível de enriquecimento atingido.
 ```
-###🛠️ Pré-requisitos & Ferramentas Utilizadas
+## 🛠️ Pré-requisitos & Ferramentas Utilizadas
 ```
 Para rodar este fluxo, você precisará de uma instância do n8n e contas nos seguintes serviços:
 
@@ -48,7 +48,7 @@ AnyMail Finder (Enriquecimento de e-mails corporativos)
 
 Google Sheets (Armazenamento dos leads)
 ```
-###🚀 Como Importar e Usar
+## 🚀 Como Importar e Usar
 ```
 Baixe o arquivo .json deste repositório.
 
