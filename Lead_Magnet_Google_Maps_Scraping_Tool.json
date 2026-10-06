@@ -1,0 +1,2410 @@
+{
+  "name": "[Lead Magnet] Google Maps Scraping Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "nwua9Gu5YrADL7ZDj",
+          "mode": "list",
+          "cachedResultName": "Google Maps Scraper (compass/crawler-google-places)",
+          "cachedResultUrl": "https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input"
+        },
+        "customBody": "={\n    \"includeWebResults\": false,\n    \"language\": \"pt-BR\",\n    \"locationQuery\": \"{{ $('On form submission').item.json['Cidade/Estado'] }}, {{ $('On form submission').item.json.Pais }}\",\n    \"maxCrawledPlacesPerSearch\": {{ $('On form submission').item.json.Quantidade }},\n    \"maxImages\": 0,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"scrapeContacts\": false,\n    \"scrapeDirectories\": false,\n    \"scrapeImageAuthors\": false,\n    \"scrapePlaceDetailPage\": false,\n    \"scrapeReviewsPersonalData\": true,\n    \"scrapeSocialMediaProfiles\": {\n        \"facebooks\": false,\n        \"instagrams\": false,\n        \"tiktoks\": false,\n        \"twitters\": false,\n        \"youtubes\": false\n    },\n    \"scrapeTableReservationProvider\": false,\n    \"searchStringsArray\": [\n        \"{{ $('On form submission').item.json['Tipo de Estabelecimento'] }}\"\n    ],\n    \"skipClosedPlaces\": false\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        352
+      ],
+      "id": "1f46bab7-c283-4d62-9c6d-41385a6e4cdd",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyApi": {
+          "id": "APIFY_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Apify - Mateus Playbooklab"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**USER REQUEST**\n{{ $('On form submission').item.json['Tipo de Estabelecimento'] }}\n{{ $('On form submission').item.json.Pais }}\n{{ $('On form submission').item.json['Cidade/Estado'] }}\n\n**TOOL OUTPUT**\n{{ $json.title }}\n{{ $json.categoryName }}\n{{ $json.address }}\n{{ $json.website }}\n{{ $json.categories }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Sua tarefa é verificar se o empreendimento retornado corresponde ao pedido do usuário. Compare a categoria, o tipo de negócio e a localização.\nResponda {status} no output parser apenas com uma das seguintes opções:\n\nSIM → corresponde ao pedido do usuário.\n\nNÃO → não corresponde.\n\nNão adicione explicações, apenas a palavra de resposta."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3280,
+        384
+      ],
+      "id": "d1392902-72ea-49e0-aa3c-5ad2efaba819",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2896,
+        352
+      ],
+      "id": "66207880-d523-4013-8c3c-888a0f2e4a5d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2,
+          "topP": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3264,
+        592
+      ],
+      "id": "85209230-0432-496d-9af9-051e92143591",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Mateus Jung - Conta OpenAI da Playbook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"status\": \"SIM/NÃO\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3424,
+        592
+      ],
+      "id": "355a0037-f507-4fb1-baac-2d53e217d9e8",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0c4db0ca-ea49-4665-a9fd-92c1a29f1f5d",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "SIM",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3552,
+        384
+      ],
+      "id": "c7eed877-77ba-4d2c-84d7-2e94451d1ee2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "formTitle": "Scrape Google Maps",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Tipo de Estabelecimento"
+            },
+            {
+              "fieldLabel": "Pais"
+            },
+            {
+              "fieldLabel": "Cidade/Estado"
+            },
+            {
+              "fieldLabel": "Quantidade",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        2352,
+        352
+      ],
+      "id": "5c7909ac-3ff0-42eb-8e0b-98d167293438",
+      "name": "On form submission",
+      "webhookId": "0abce71f-f175-4d4c-a290-81ef0ab4c56b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aef5c241-3432-4c6e-885f-8592d7c6b4f4",
+              "leftValue": "={{ $('Loop Over Items').item.json.website }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3744,
+        368
+      ],
+      "id": "42f1f068-038f-4cf8-8c2e-939abb981d30",
+      "name": "Website?"
+    },
+    {
+      "parameters": {
+        "resource": "extract",
+        "urls": [
+          "={{ $('Loop Over Items').first().json.website }}"
+        ],
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        3904,
+        368
+      ],
+      "id": "ac3e0167-b2cd-4549-8b19-710e9d66bde1",
+      "name": "Extract",
+      "credentials": {
+        "tavilyApi": {
+          "id": "TAVILY_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Tavily account - Mateus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2,
+          "topP": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4256,
+        608
+      ],
+      "id": "837a2667-2eac-438a-bbf6-548e15c12e8c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Mateus Jung - Conta OpenAI da Playbook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "=Você é um especialista em pesquisa de dados públicos focado em identificar decisores empresariais.\n\nSOBRE SEU PAPEL:\n- Você é uma FERRAMENTA do agente (não é você que decide o fluxo, apenas executa buscas).\n- Você executa buscas via web em tempo real.\n- Seu objetivo único é encontrar NOMES de decisores, não informações genéricas.\n- Você é preciso, não inventa e usa o endereço/CNPJ para ancorar a empresa correta.\n\nTAREFA ÚNICA:\nEncontre o nome completo do principal decisor da empresa: um sócio-administrador, sócio, proprietário, CEO, diretor ou administrador.\n\nVOCÊ RECEBE:\n- Nome da empresa\n- Endereço completo (cidade, estado, rua, bairro, CEP)\n- Google Maps URL\n- [NOVO] Conteúdo do website (se fornecido—leia com atenção)\n\nÂNCORA DA EMPRESA (MUITO IMPORTANTE):\n- Sempre valide se a empresa encontrada bate com:\n  - Nome/razão social compatível.\n  - MESMA cidade e estado do endereço recebido.\n  - Quando disponível, MESMA rua/bairro/CEP.\n- Se houver múltiplas empresas com nomes semelhantes, escolha aquela cujo endereço for mais compatível.\n\nMÉTODOS DE BUSCA (siga SEMPRE esta ordem, a menos que o agente especifique outra):\n\nMétodo 1: CONTEÚDO DO WEBSITE (SE FORNECIDO)\n  - Se o agente forneceu \"Conteúdo do website\", COMECE POR AQUI.\n  - Procure no conteúdo por:\n    - Nome do fundador, proprietário, sócio, CEO, diretor (procure por \"Fulano\", \"José Eduardo\", etc.)\n    - Seções como \"Sobre nós\", \"Quem somos\", \"Equipe\", \"Contato\", \"Footer\".\n    - Frases como \"Fundado por\", \"CEO:\", \"Proprietário:\", \"Dirigido por\", \"Responsável:\", \"@\" (emails com nome).\n    - Autores de posts/notícias (formato \"Por [Nome]\" ou \"Escrito por [Nome]\").\n  - SE encontrou nome no website → RETORNE IMEDIATAMENTE (não continue buscando).\n  - SE não encontrou nome no website fornecido → passe para Método 2.\n\nMétodo 2: CNPJ e QUADRO SOCIETÁRIO (SEGUNDA PRIORIDADE)\n  - Use sites como: Receita Federal (QSA), CNPJA, icnpj.org, cnpj.biz, Redesim, Serasa, Casa dos Dados.\n  - Foque em páginas que tenham explicitamente \"Quadro de Sócios e Administradores (QSA)\".\n  - Retorne o nome do SÓCIO-ADMINISTRADOR sempre que existir.\n  - Se não houver sócio-administrador, retorne o SÓCIO (pessoa física).\n  - Sempre valide que a empresa é a mesma pelo endereço fornecido.\n\nMétodo 3: Diretórios Públicos de Empresas/Pessoas\n  - Use fontes como: Econodata, Serasa, Casa dos Dados, Advdinamico, guias de CNPJ.\n  - Procure pelo nome da empresa e veja se há listagem de sócios/responsáveis.\n  - Retorne o nome do sócio, sócio-administrador ou responsável principal.\n\nMétodo 4: LinkedIn da Empresa (página oficial)\n  - Encontre a página LinkedIn da empresa (pelo nome + cidade).\n  - Verifique a descrição e seção de \"Pessoas\" para \"Founder\", \"CEO\", \"Sócio\", \"Owner\".\n  - Retorne o nome do fundador/CEO/líder principal.\n\nMétodo 5: Redes Sociais e Guias Locais\n  - Procure Facebook, Instagram, Twitter, guias locais (Solutudo, etc.).\n  - Busque em descrições, bio ou posts por \"Fundador:\", \"Diretor:\", \"Responsável:\".\n  - Retorne o nome do proprietário/admin identificado.\n\nFORMATO DE RETORNO (TEXTO SIMPLES, SEM JSON):\n\nSE ENCONTROU ALGUM NOME DE DECISOR:\n\n---\nNOME: [NOME COMPLETO DO DECISOR]\nFONTE: [Website / CNPJ / QSA / Diretório / LinkedIn / Rede social]\nDETALHE_FONTE: [ex: 'Seção Equipe do website oficial', 'Quadro societário via icnpj.org', 'Perfil na página LinkedIn da empresa']\nCONFIANCA: [alta / media / baixa]\n---\n\nRegra de confiança:\n- CONFIANCA = alta → nome consta em website oficial, QSA/CNPJ, ou página oficial clara.\n- CONFIANCA = media → nome consta em diretórios ou LinkedIn com indicação, mas sem confirmação em QSA.\n- CONFIANCA = baixa → nome inferido com pouca evidência; NÃO retorne nesses casos.\n\nSE NÃO ENCONTROU NOME NENHUM APÓS TENTAR TODOS OS MÉTODOS:\n\n---\nNENHUM NOME ENCONTRADO\nTENTATIVAS: [Website, CNPJ, Diretórios, LinkedIn, Redes sociais]\nRAZAO: [explique: site sem seção de equipe, sem CNPJ acessível, dados muito escassos, etc.]\n---\n\nREGRAS CRÍTICAS (SIGA À RISCA):\n- NUNCA invente nomes.\n- SEMPRE use o endereço/cidade/estado/CEP fornecido para garantir que está na empresa correta.\n- Se o agente forneceu \"Conteúdo do website\", leia com atenção e NÃO ignore.\n- Sempre cite claramente a FONTE onde o nome foi encontrado.\n- Se não tiver pelo menos 85% de certeza, diga que não encontrou.\n- Priorize SEMPRE: Website fornecido > CNPJ/QSA > Diretórios > LinkedIn > Redes sociais.\n\nOBJETIVO:\nEntregar para o agente um nome único e confiável de decisor, com fonte e nível de confiança bem descritos.\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message1_Text', `User Message apropriada para a busca precisa via perplexity`, 'string') }}"
+            }
+          ]
+        },
+        "options": {
+          "topP": 0.5
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        4400,
+        608
+      ],
+      "id": "b6f3a1cd-e1cd-4f5c-be81-27183e4ad417",
+      "name": "call_perplexity_search",
+      "credentials": {
+        "perplexityApi": {
+          "id": "PERPLEXITY_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Perplexity - Victor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"nome_decisor\": \"string\",\n  \"status\": \"encontrado|nao_encontrado\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4544,
+        608
+      ],
+      "id": "b159a2ec-4a7a-4ef4-968d-e4e41aab7344",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d3fe5e4e-31d2-493e-8044-0f849475c8a0",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "encontrado",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4640,
+        384
+      ],
+      "id": "a09c20b3-d715-46bc-ab99-6b7d7c949af9",
+      "name": "Decisor Encontrado?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Encontre os decisores da empresa com os seguintes dados:\n\nNome da empresa: {{ $('Loop Over Items').first().json.title }}\nEndereço completo: {{ $('Loop Over Items').first().json.address }}\nLink do Google Maps: {{ $('Loop Over Items').first().json.url }}\n\nBusque por:\n1. Quadro societário (CNPJ, Junta Comercial, Receita Federal)\n2. Páginas oficiais da empresa (website, \"Sobre nós\", contato)\n3. LinkedIn da empresa (página oficial)\n4. Diretórios de empresas (Econodata, CNPJ.biz, Serasa, etc.)\n5. Redes sociais e matérias sobre a empresa\n\nRetorne EXCLUSIVAMENTE o JSON estruturado conforme instruído.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é um agente especialista em identificação de decisores empresariais.\n\nOBJETIVO FINAL:\nRetornar o nome completo do decisor da empresa. Ponto.\n\nGARANTIA CRÍTICA:\nVocê SEMPRE encontra um nome. Se a primeira busca falhar, tenta outras abordagens até conseguir.\nNão há \"falha\" aceitável neste agente—ou você encontra ou documenta por que a empresa não existe.\n\nSOBRE VOCÊ:\n- Determinístico (Temperature 0.2)\n- Persistente (máximo 4 tentativas diferentes)\n- Não inventa (sempre valida em fontes públicas)\n- Focado (apenas NOME, sem distrações)\n\nFERRAMENTAS DISPONÍVEIS:\n1. \"call_perplexity_search\" → Busca decisores via web\n\nPROCESSO OBRIGATÓRIO:\n\nEtapa 1: RECEBER\n  └─ Input: { nome_empresa, endereco_completo, google_maps_url }\n\nEtapa 2: BUSCAR DECISOR\n  └─ Chamar \"call_perplexity_search\" com prioridades:\n     1. CNPJ (Receita Federal, Junta Comercial)\n     2. Diretórios públicos (Econodata, CNPJA, Serasa)\n     3. Website oficial da empresa\n     4. LinkedIn da empresa\n     5. Redes sociais e matérias\n  \n  └─ SE ENCONTROU NOME: ir para Etapa 3\n  └─ SE NÃO ENCONTROU: tente próxima prioridade\n  └─ APÓS 2 TENTATIVAS SEM SUCESSO: retorne erro explícito\n\nEtapa 3: RETORNAR NOME\n\nFORMATO DE RESPOSTA OBRIGATÓRIO:\n\n{\n  \"nome_decisor\": \"string (NUNCA vazio se status = encontrado)\",\n  \"status\": \"encontrado|nao_encontrado\"\n}\n\nREGRAS CRÍTICAS:\n\n1. CAMPO \"nome_decisor\":\n   - Se status = \"encontrado\": DEVE ter nome real completo (ex: \"João da Silva\")\n   - Se status = \"nao_encontrado\": pode estar vazio\n   - Prioridade: sócio-administrador > CEO > diretor > fundador > proprietário\n\n2. CAMPO \"status\":\n   - \"encontrado\": conseguiu pelo menos 1 nome válido\n   - \"nao_encontrado\": após 4 tentativas distintas, realmente não conseguiu\n\nEXEMPLOS:\n\n✅ Encontrado:\n{\"nome_decisor\": \"João Silva\", \"status\": \"encontrado\"}\n\n✅ Encontrado (outro formato):\n{\"nome_decisor\": \"Cleomar de Lima\", \"status\": \"encontrado\"}\n\n❌ Não encontrado:\n{\"nome_decisor\": \"\", \"status\": \"nao_encontrado\"}\n\nTEMPERATURA E TOP P:\n- Temperature: 0.2 (puro determinismo)\n- Top P: 0.7 (raciocínio controlado)\n\nLEMBRE-SE:\nSeu ÚNICO trabalho é encontrar o NOME.\nNão se distraia com LinkedIn, cargo, endereço ou outras coisas.\nNOME. Pronto.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4368,
+        384
+      ],
+      "id": "44310b6b-102c-4283-9579-297d99f38448",
+      "name": "Decider Searcher"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1949a7a3-4b95-4ca0-b797-78db0f0807a0",
+              "name": "any_mail",
+              "value": "ANYMAIL_API_KEY_PLACEHOLDER",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2496,
+        352
+      ],
+      "id": "aafe3196-372c-490e-bea5-d65064a9531f",
+      "name": "Keys"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.1/find-email/person",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('Keys').first().json.any_mail }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "full_name",
+              "value": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor }}"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $('Code in JavaScript').first().json.domain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5712,
+        640
+      ],
+      "id": "58781f47-99e0-463c-b112-c3de5b855c3a",
+      "name": "AnyMail Finder",
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fd192b88-b06f-4d1a-9a0e-bef8c35b31e8",
+              "leftValue": "={{ $json.email_status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5936,
+        640
+      ],
+      "id": "0451c1c5-0c5c-4d27-bf0a-1f6e83ca9f5b",
+      "name": "Email Encontrado?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bBmEFZPvnEJL5TrjuUpqHSHR2tRyb3dyK55z5oTEL7w",
+          "mode": "list",
+          "cachedResultName": "Google Maps",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $('Loop Over Items').first().json.title }}",
+            "Categoria": "={{ $('On form submission').first().json['Tipo de Estabelecimento'] }}",
+            "Endereço": "={{ $('Loop Over Items').first().json.address }}",
+            "Bairro": "={{ $('Loop Over Items').first().json.neighborhood }}",
+            "Rua": "={{ $('Loop Over Items').first().json.street }}",
+            "Cidade": "={{ $('Loop Over Items').first().json.city }}",
+            "Código Postal": "={{ $('Loop Over Items').first().json.postalCode }}",
+            "Estado": "={{ $('Loop Over Items').first().json.state }}",
+            "País": "={{ $('Loop Over Items').first().json.countryCode }}",
+            "Website": "={{ $('Loop Over Items').first().json.website }}",
+            "N° de Contato": "={{ $('Loop Over Items').first().json.phoneUnformatted.split(\"+\")[1] }}",
+            "Nota Maps": "={{ $('Loop Over Items').first().json.totalScore }}",
+            "Link Maps": "={{ $('Loop Over Items').first().json.url }}",
+            "Data": "={{ $today.format('yyyy-MM-dd') }}",
+            "Email": "Não Encontrado",
+            "LinkedIn": "Não Encontrado",
+            "Nome Decisor": "Não Encontrado"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Endereço",
+              "displayName": "Endereço",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bairro",
+              "displayName": "Bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rua",
+              "displayName": "Rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cidade",
+              "displayName": "Cidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Código Postal",
+              "displayName": "Código Postal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "País",
+              "displayName": "País",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "N° de Contato",
+              "displayName": "N° de Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nota Maps",
+              "displayName": "Nota Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reviews",
+              "displayName": "Reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Maps",
+              "displayName": "Link Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome Decisor",
+              "displayName": "Nome Decisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4768,
+        512
+      ],
+      "id": "ce99c8e0-0b3d-48b3-b5b7-f2f645dc6c26",
+      "name": "Google Sheets - Sem Decisor",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "A8B1oubpl7132gVI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anymailfinder.com/v5.1/find-email/person",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('Keys').first().json.any_mail }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "full_name",
+              "value": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor }}"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $('Code in JavaScript').item.json.domain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5712,
+        288
+      ],
+      "id": "ad3d26c8-6511-431e-9c02-8463f0acc686",
+      "name": "AnyMail Finder1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fd192b88-b06f-4d1a-9a0e-bef8c35b31e8",
+              "leftValue": "={{ $json.email_status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5936,
+        288
+      ],
+      "id": "65a9e53d-a023-4523-bc1d-d41703199707",
+      "name": "Email Encontrado?1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bBmEFZPvnEJL5TrjuUpqHSHR2tRyb3dyK55z5oTEL7w",
+          "mode": "list",
+          "cachedResultName": "Google Maps",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $('Loop Over Items').first().json.title }}",
+            "Categoria": "={{ $('On form submission').first().json['Tipo de Estabelecimento'] }}",
+            "Endereço": "={{ $('Loop Over Items').first().json.address }}",
+            "Bairro": "={{ $('Loop Over Items').first().json.neighborhood }}",
+            "Rua": "={{ $('Loop Over Items').first().json.street }}",
+            "Cidade": "={{ $('Loop Over Items').first().json.city }}",
+            "Código Postal": "={{ $('Loop Over Items').first().json.postalCode }}",
+            "Estado": "={{ $('Loop Over Items').first().json.state }}",
+            "País": "={{ $('Loop Over Items').first().json.countryCode }}",
+            "Website": "={{ $('Loop Over Items').first().json.website }}",
+            "N° de Contato": "={{ $('Loop Over Items').first().json.phoneUnformatted.split(\"+\")[1] }}",
+            "Nota Maps": "={{ $('Loop Over Items').first().json.totalScore }}",
+            "Link Maps": "={{ $('Loop Over Items').first().json.url }}",
+            "Data": "={{ $today.format('yyyy-MM-dd') }}",
+            "Email": "=Não Encontrado",
+            "LinkedIn": "={{ $('AI Agent').first().json.output.linkedin_url }}",
+            "Nome Decisor": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor }}",
+            "Reviews": "={{ $('Loop Over Items').first().json.reviewsCount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Endereço",
+              "displayName": "Endereço",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bairro",
+              "displayName": "Bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rua",
+              "displayName": "Rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cidade",
+              "displayName": "Cidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Código Postal",
+              "displayName": "Código Postal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "País",
+              "displayName": "País",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "N° de Contato",
+              "displayName": "N° de Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nota Maps",
+              "displayName": "Nota Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reviews",
+              "displayName": "Reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Maps",
+              "displayName": "Link Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome Decisor",
+              "displayName": "Nome Decisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6128,
+        384
+      ],
+      "id": "9997eb30-60e1-427f-b003-a32319884289",
+      "name": "Google Sheets - LinkedIn Encontrado & Email Não Encontrado",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "A8B1oubpl7132gVI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bBmEFZPvnEJL5TrjuUpqHSHR2tRyb3dyK55z5oTEL7w",
+          "mode": "list",
+          "cachedResultName": "Google Maps",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "Sua URL aqui"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $('Loop Over Items').first().json.title }}",
+            "Categoria": "={{ $('On form submission').first().json['Tipo de Estabelecimento'] }}",
+            "Endereço": "={{ $('Loop Over Items').first().json.address }}",
+            "Bairro": "={{ $('Loop Over Items').first().json.neighborhood }}",
+            "Rua": "={{ $('Loop Over Items').first().json.street }}",
+            "Cidade": "={{ $('Loop Over Items').first().json.city }}",
+            "Código Postal": "={{ $('Loop Over Items').first().json.postalCode }}",
+            "Estado": "={{ $('Loop Over Items').first().json.state }}",
+            "País": "={{ $('Loop Over Items').first().json.countryCode }}",
+            "Website": "={{ $('Loop Over Items').first().json.website }}",
+            "N° de Contato": "={{ $('Loop Over Items').first().json.phoneUnformatted.split(\"+\")[1] }}",
+            "Nota Maps": "={{ $('Loop Over Items').first().json.totalScore }}",
+            "Link Maps": "={{ $('Loop Over Items').first().json.url }}",
+            "Data": "={{ $today.format('yyyy-MM-dd') }}",
+            "Email": "={{ $('AnyMail Finder1').first().json.email }}",
+            "LinkedIn": "={{ $('AI Agent').first().json.output.linkedin_url }}",
+            "Nome Decisor": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor }}",
+            "Reviews": "={{ $('Loop Over Items').first().json.reviewsCount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Endereço",
+              "displayName": "Endereço",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bairro",
+              "displayName": "Bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rua",
+              "displayName": "Rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cidade",
+              "displayName": "Cidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Código Postal",
+              "displayName": "Código Postal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "País",
+              "displayName": "País",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "N° de Contato",
+              "displayName": "N° de Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nota Maps",
+              "displayName": "Nota Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reviews",
+              "displayName": "Reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Maps",
+              "displayName": "Link Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome Decisor",
+              "displayName": "Nome Decisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6128,
+        208
+      ],
+      "id": "436ab7e8-8156-4539-9d68-efb71292c11f",
+      "name": "Google Sheets - LinkedIn & Email Encontrados",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "A8B1oubpl7132gVI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bBmEFZPvnEJL5TrjuUpqHSHR2tRyb3dyK55z5oTEL7w",
+          "mode": "list",
+          "cachedResultName": "Google Maps",
+          "cachedResultUrl": "Seu URL aqui"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "Seu URL aqui"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $('Loop Over Items').first().json.title }}",
+            "Categoria": "={{ $('On form submission').first().json['Tipo de Estabelecimento'] }}",
+            "Endereço": "={{ $('Loop Over Items').first().json.address }}",
+            "Bairro": "={{ $('Loop Over Items').first().json.neighborhood }}",
+            "Rua": "={{ $('Loop Over Items').first().json.street }}",
+            "Cidade": "={{ $('Loop Over Items').first().json.city }}",
+            "Código Postal": "={{ $('Loop Over Items').first().json.postalCode }}",
+            "Estado": "={{ $('Loop Over Items').first().json.state }}",
+            "País": "={{ $('Loop Over Items').first().json.countryCode }}",
+            "Website": "={{ $('Loop Over Items').first().json.website }}",
+            "N° de Contato": "={{ $('Loop Over Items').first().json.phoneUnformatted.split(\"+\")[1] }}",
+            "Nota Maps": "={{ $('Loop Over Items').first().json.totalScore }}",
+            "Link Maps": "={{ $('Loop Over Items').first().json.url }}",
+            "Data": "={{ $today.format('yyyy-MM-dd') }}",
+            "Email": "={{ $('AnyMail Finder').first().json.email }}",
+            "LinkedIn": "Não Encontrado",
+            "Nome Decisor": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor }}",
+            "Reviews": "={{ $('Loop Over Items').first().json.reviewsCount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Endereço",
+              "displayName": "Endereço",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bairro",
+              "displayName": "Bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rua",
+              "displayName": "Rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cidade",
+              "displayName": "Cidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Código Postal",
+              "displayName": "Código Postal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "País",
+              "displayName": "País",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "N° de Contato",
+              "displayName": "N° de Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nota Maps",
+              "displayName": "Nota Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reviews",
+              "displayName": "Reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Maps",
+              "displayName": "Link Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome Decisor",
+              "displayName": "Nome Decisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6128,
+        576
+      ],
+      "id": "33e898df-c05e-4ebd-a524-641cacd2cf05",
+      "name": "Google Sheets - LinkedIn Não Encontrado & Email Encontrado",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "A8B1oubpl7132gVI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bBmEFZPvnEJL5TrjuUpqHSHR2tRyb3dyK55z5oTEL7w",
+          "mode": "list",
+          "cachedResultName": "Google Maps",
+          "cachedResultUrl": "Seu URL aqui"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "Seu URL aqui"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $('Loop Over Items').first().json.title }}",
+            "Categoria": "={{ $('On form submission').first().json['Tipo de Estabelecimento'] }}",
+            "Endereço": "={{ $('Loop Over Items').first().json.address }}",
+            "Bairro": "={{ $('Loop Over Items').first().json.neighborhood }}",
+            "Rua": "={{ $('Loop Over Items').first().json.street }}",
+            "Cidade": "={{ $('Loop Over Items').first().json.city }}",
+            "Código Postal": "={{ $('Loop Over Items').first().json.postalCode }}",
+            "Estado": "={{ $('Loop Over Items').first().json.state }}",
+            "País": "={{ $('Loop Over Items').first().json.countryCode }}",
+            "Website": "={{ $('Loop Over Items').first().json.website }}",
+            "N° de Contato": "={{ $('Loop Over Items').first().json.phoneUnformatted.split(\"+\")[1] }}",
+            "Nota Maps": "={{ $('Loop Over Items').first().json.totalScore }}",
+            "Link Maps": "={{ $('Loop Over Items').first().json.url }}",
+            "Data": "={{ $today.format('yyyy-MM-dd') }}",
+            "Email": "Não Encontrado",
+            "LinkedIn": "Não Encontrado",
+            "Nome Decisor": "={{ $('Decisor Encontrado?').first().json.output.nome_decisor}}",
+            "Reviews": "={{ $('Loop Over Items').first().json.reviewsCount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Endereço",
+              "displayName": "Endereço",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bairro",
+              "displayName": "Bairro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rua",
+              "displayName": "Rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cidade",
+              "displayName": "Cidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Código Postal",
+              "displayName": "Código Postal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "País",
+              "displayName": "País",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "N° de Contato",
+              "displayName": "N° de Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nota Maps",
+              "displayName": "Nota Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reviews",
+              "displayName": "Reviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Maps",
+              "displayName": "Link Maps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome Decisor",
+              "displayName": "Nome Decisor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6128,
+        752
+      ],
+      "id": "808943f3-0aa0-4760-be6b-93ec3f7d7493",
+      "name": "Google Sheets - LinkedIn & Email Não Encontrados",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "A8B1oubpl7132gVI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36b5ee61-6244-4a7e-b484-66a6e621edec",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "da3c46a4-b9a5-4322-98ce-90caa784b1c6",
+              "name": "address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3104,
+        384
+      ],
+      "id": "71ca5b82-0634-4cd1-996b-2b0d7f7a0d97",
+      "name": "Set Company Name"
+    },
+    {
+      "parameters": {
+        "content": "## LinkedIn Encontrado",
+        "height": 384,
+        "width": 656,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5648,
+        176
+      ],
+      "id": "ed89a3b2-046c-4b0d-b8be-4be6798aedb2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## LinkedIn Não Encontrado",
+        "height": 352,
+        "width": 640,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5648,
+        576
+      ],
+      "id": "bcb3df4e-a37f-4a6c-a626-86ee61b6be7c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Busca e Validação de Perfil do LinkedIn",
+        "height": 496,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4912,
+        208
+      ],
+      "id": "30f49110-14eb-483c-aa81-af069b3cbb4d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Busca de Decisores com Verificação de Website (Caso Exista)",
+        "height": 544,
+        "width": 1360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3536,
+        208
+      ],
+      "id": "209f07d4-4ba0-45a5-94ed-93ef500b5e38",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Input (Formulário) + Keys",
+        "height": 352,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        208
+      ],
+      "id": "045aacc8-0f12-4107-b290-0e23be1ad8ff",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Ator Apify",
+        "height": 352,
+        "width": 176,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2624,
+        208
+      ],
+      "id": "acca0ca3-2666-4893-a0fa-503d5ca8c2c6",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Validação Output Ator Apify",
+        "height": 544,
+        "width": 688,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        208
+      ],
+      "id": "a512cb76-de88-471c-b52c-d47caed4f890",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Decider Searcher').first().json.output.nome_decisor }}\n{{ $('Set Company Name').first().json.title }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é um agente especializado em encontrar perfis de LinkedIn de decisores empresariais.\n\nINPUTS:\n- nome_pessoa: Nome completo da pessoa\n- nome_empresa: Nome da empresa\n- cidade/estado: Opcional\n\nFERRAMENTA:\n- tavily_search: Retorna resultados do LinkedIn (título, URL, snippets)\n- LIMITE: Máximo 4 chamadas por pessoa\n\nESTRATÉGIA DE BUSCA (3 TENTATIVAS PROGRESSIVAS):\n\n1. TENTATIVA 1 - Busca Direta\n   Query: \"Nome Completo\" \"Nome Empresa\"\n   Exemplo: \"Cleomar Pietro Santos de Lima\" \"Conta Fácil\"\n\n2. TENTATIVA 2 - Variações (se necessário)\n   - Simplifique nome da pessoa (remova segundo nome)\n   Exemplo: \"Cleomar Lima\" \"Conta Fácil\"\n\n3. TENTATIVA 3 - Nome Reduzido (se necessário)\n   - Use primeiro + último nome\n   - Adicione \"LinkedIn\" na query\n   Exemplo: \"Cleomar Santos\" \"Conta Fácil\" LinkedIn\n\n4. TENTATIVA 4 - Variação do Nome (se necessário)\n   - Varie o nome, tentando apenas Primeiro nome + Sobrenome\n   Exemplo: \"Cleomar Pietro\" \"Conta Fácil\"\n\nBOAS PRÁTICAS PARA QUERIES:\n- Mantenha queries curtas (3-6 termos relevantes)\n- Combine: nome + empresa + localização\n- Faça variações estratégicas do nome, e nunca repita a mesma qwery\n\nCRITÉRIOS DE ACEITAÇÃO:\nAceite um perfil apenas se:\n- Nome muito similar ao informado\n- Empresa atual/recente corresponde OU mesmo segmento + localização\n- URL contém \"/in/\" (perfil pessoal)\n\nQUANDO NÃO ACEITAR:\n- Após 3 tentativas sem match confiável\n- Quando a URL contém \"/pub/dir/\"\n- Perfil não corresponde aos critérios\n- Múltiplos perfis sem diferenciação clara\n\nREGRAS CRÍTICAS:\n- NUNCA invente ou construa URLs\n- NUNCA retorne perfis com baixa confiança\n- Prefira \"nao_encontrado\" a resultado incorreto\n\nOUTPUT OBRIGATÓRIO (JSON PURO - sem texto adicional):\n\n{\n  \"nome_pessoa\": \"string\",\n  \"nome_empresa\": \"string\", \n  \"linkedin_url\": \"string ou null\",\n  \"status\": \"encontrado|nao_encontrado\",\n  \"justificativa\": \"string\"\n}\n\n# FORMATO DE RESPOSTA OBRIGATÓRIO (JSON PURO):\n\nVocê DEVE responder EXCLUSIVAMENTE com um JSON no formato:\n\n{\n  \"nome_pessoa\": \"string\",\n  \"nome_empresa\": \"string\",\n  \"linkedin_url\": \"string\",\n  \"status\": \"encontrado|nao_encontrado\",\n  \"justificativa\": \"string\"\n}\n\nNão escreva nenhuma outra palavra, explicação ou comentário fora desse JSON.\n\n# REGRAS CRÍTICAS:\n- Use NO MÁXIMO 4 chamadas ao tavily_search por execução.\n- Nunca invente ou altere uma URL de LinkedIn.\n- Nunca retorne um perfil se a confiança for baixa; prefira \"nao_encontrado\".\n- Queries devem ser sempre objetivas, com foco em: \"nome\", \"empresa\".\n- Nunca considere um URL com \"/pub/dir/\" um url válido. Ele não é válido pois não é um URL de um perfil pessoal. Continue procurando. \n- Sempre use a tool Tavily"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5024,
+        352
+      ],
+      "id": "d10a70fe-c2ea-43c9-a898-e4e202e20885",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Escreva sua qwery para gusca no google, com objetivo de encontrar o perfil pessoal do lead`, 'string') }}",
+        "options": {
+          "max_results": 5,
+          "include_domains": [
+            "www.linkedin.com/in/"
+          ],
+          "country": "Brazil"
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        5152,
+        560
+      ],
+      "id": "ddb5147d-0d6b-4bfb-ae77-33feae6b908a",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "TAVILY_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Tavily account - Mateus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"nome_pessoa\": \"string\",\n  \"nome_empresa\": \"string\",\n  \"linkedin_url\": \"string\",\n  \"status\": \"encontrado|nao_encontrado\",\n  \"justificativa\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        5296,
+        560
+      ],
+      "id": "21443dbb-30e2-4f27-907f-07306c853831",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4976,
+        560
+      ],
+      "id": "490af597-0399-4e60-b8a0-6be5d79e7ef8",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID_PLACEHOLDER",
+          "name": "Mateus Jung - Conta OpenAI da Playbook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d52c2b8-a7ae-4dbd-aa71-eaeafb2c4bce",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "encontrado",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5440,
+        352
+      ],
+      "id": "353fa47c-c6ec-4723-9736-2a2bdf0c24ff",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractDomain(rawUrl) {\n  if (!rawUrl || typeof rawUrl !== 'string') {\n    return null;\n  }\n\n  let url = rawUrl.trim();\n\n  // Garante protocolo para o parser\n  if (!/^https?:\\/\\//i.test(url)) {\n    url = 'https://' + url;\n  }\n\n  try {\n    const parsedUrl = new URL(url);\n    return parsedUrl.hostname.replace(/^www\\./i, '');\n  } catch (error) {\n    // Fallback ultra defensivo\n    return rawUrl\n      .replace(/^https?:\\/\\//i, '')\n      .replace(/^www\\./i, '')\n      .split('/')[0]\n      .trim();\n  }\n}\n\n// Prioridade: results → failed_results\nconst urlFromResults =\n  $json.results?.[0]?.url ||\n  $json.failed_results?.[0]?.url ||\n  null;\n\nreturn [\n  {\n    original_url: urlFromResults,\n    domain: extractDomain(urlFromResults)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4096,
+        368
+      ],
+      "id": "2f21b992-e618-4926-be33-5303cd7bdcfd",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set Company Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Website?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website?": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decider Searcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Decider Searcher",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "call_perplexity_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Decider Searcher",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Decider Searcher",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decisor Encontrado?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - Sem Decisor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decider Searcher": {
+      "main": [
+        [
+          {
+            "node": "Decisor Encontrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keys": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AnyMail Finder": {
+      "main": [
+        [
+          {
+            "node": "Email Encontrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Encontrado?": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - LinkedIn Não Encontrado & Email Encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - LinkedIn & Email Não Encontrados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Sem Decisor": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AnyMail Finder1": {
+      "main": [
+        [
+          {
+            "node": "Email Encontrado?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Encontrado?1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - LinkedIn & Email Encontrados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets - LinkedIn Encontrado & Email Não Encontrado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - LinkedIn Não Encontrado & Email Encontrado": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - LinkedIn & Email Não Encontrados": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - LinkedIn Encontrado & Email Não Encontrado": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - LinkedIn & Email Encontrados": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Company Name": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AnyMail Finder1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AnyMail Finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Decider Searcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "29953bc5-166c-4dc4-8764-d5838068fb02",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98a7f76cbff973591af08e09b5be2fed14b55b37d878782c0638229a94477203"
+  },
+  "id": "5FXB6hRWVE9hjTnO",
+  "tags": [
+    {
+      "updatedAt": "2025-06-12T17:49:26.927Z",
+      "createdAt": "2025-06-12T17:49:26.927Z",
+      "id": "PatjR2DI1NI2457H",
+      "name": "Lead Magnet"
+    }
+  ]
+}
