@@ -8,7 +8,7 @@ Fluxo automatizado no **n8n** para prospecção B2B (Lead Magnet). Ele busca emp
 
 text
 Formulário de Entrada 
-   └── Busca Google Maps (Apify)
+    └── Busca Google Maps (Apify)
        └── Validação do Negócio (OpenAI)
            └── Busca do Decisor (Perplexity + Sonar)
                └── Busca do LinkedIn Pessoal (Tavily AI Agent)
