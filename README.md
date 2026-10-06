@@ -6,7 +6,7 @@ Fluxo automatizado no **n8n** para prospecção B2B (Lead Magnet). Ele busca emp
 
 ## ⚙️ Como o Fluxo Funciona
 
-text
+```text
 Formulário de Entrada 
     └── Busca Google Maps (Apify)
        └── Validação do Negócio (OpenAI)
@@ -14,7 +14,8 @@ Formulário de Entrada
                └── Busca do LinkedIn Pessoal (Tavily AI Agent)
                    └── Busca de E-mail Corporativo (AnyMail Finder)
                        └── Gravação Estruturada (Google Sheets)
-
+```
+```
 Gatilho (Formulário): Recebe Nicho, Cidade, Estado e Quantidade desejada de leads.
 
 Scraping: O ator da Apify extrai os dados brutos de empresas no Google Maps.
@@ -28,9 +29,9 @@ LinkedIn: Agente com busca web (Tavily) encontra o perfil pessoal do decisor.
 Enriquecimento de E-mail: A API da AnyMail Finder busca e valida o e-mail pelo domínio e nome.
 
 Exportação: Insere os dados finais na planilha Google Sheets categorizados pelo nível de enriquecimento atingido.
-
+```
 ###🛠️ Pré-requisitos & Ferramentas Utilizadas
-
+```
 Para rodar este fluxo, você precisará de uma instância do n8n e contas nos seguintes serviços:
 
 n8n (versão self-hosted ou cloud)
@@ -46,9 +47,9 @@ Tavily (Pesquisa em tempo real para o Agente)
 AnyMail Finder (Enriquecimento de e-mails corporativos)
 
 Google Sheets (Armazenamento dos leads)
-
+```
 ###🚀 Como Importar e Usar
-
+```
 Baixe o arquivo .json deste repositório.
 
 No seu n8n, clique em Add Workflow > Import from File e selecione o JSON baixado.
@@ -74,7 +75,7 @@ Ative o fluxo e acesse o link gerado pelo nó On form submission para iniciar as
 code Code
 
 ---
-
+```
 ### Dica rápida para o commit:
 * Nome do arquivo no repositório: `workflow-google-maps-enrichment.json`
 * Mensagem de commit sugerida: `feat: add n8n lead generation and enrichment workflow`
