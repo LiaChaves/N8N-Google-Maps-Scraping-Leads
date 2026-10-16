@@ -72,10 +72,3 @@ Nos nós do Google Sheets, selecione a sua planilha de destino.
 
 Ative o fluxo e acesse o link gerado pelo nó On form submission para iniciar as buscas.
 
-code Code
-
----
-```
-### Dica rápida para o commit:
-* Nome do arquivo no repositório: `workflow-google-maps-enrichment.json`
-* Mensagem de commit sugerida: `feat: add n8n lead generation and enrichment workflow`
